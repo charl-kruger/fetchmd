@@ -3,8 +3,10 @@ import { fetchMarkdownPage } from "./cloudflare.js";
 
 describe("fetchMarkdownPage", () => {
   it("uses Cloudflare markdown response when available", async () => {
-    const mockFetch: typeof fetch = async () =>
-      new Response("# Hello", {
+    let receivedInit: RequestInit | undefined;
+    const mockFetch: typeof fetch = async (_input, init) => {
+      receivedInit = init;
+      return new Response("# Hello", {
         status: 200,
         headers: {
           "content-type": "text/markdown; charset=utf-8",
@@ -12,6 +14,7 @@ describe("fetchMarkdownPage", () => {
           "content-signal": "ai-input=yes",
         },
       });
+    };
 
     const result = await fetchMarkdownPage("https://example.com", {
       fetchImpl: mockFetch,
@@ -21,16 +24,25 @@ describe("fetchMarkdownPage", () => {
     expect(result.markdown).toBe("# Hello");
     expect(result.markdownTokens).toBe(22);
     expect(result.contentSignal).toBe("ai-input=yes");
+    expect((receivedInit?.headers as Record<string, string>)["Accept"]).toContain(
+      "text/markdown",
+    );
+    expect(
+      (receivedInit?.headers as Record<string, string>)["Accept-Encoding"],
+    ).toBe("identity");
   });
 
   it("falls back to HTML conversion when markdown is not returned", async () => {
     const mockFetch: typeof fetch = async () =>
-      new Response("<html><body><main><h1>Welcome</h1><p>Page</p></main></body></html>", {
-        status: 200,
-        headers: {
-          "content-type": "text/html; charset=utf-8",
+      new Response(
+        "<html><body><main><h1>Welcome</h1><p>Page</p></main></body></html>",
+        {
+          status: 200,
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+          },
         },
-      });
+      );
 
     const result = await fetchMarkdownPage("https://example.com", {
       fetchImpl: mockFetch,

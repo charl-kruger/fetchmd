@@ -2,6 +2,7 @@ import { convertHtmlToMarkdown, estimateTokenCount } from "./html-to-markdown.js
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_ACCEPT = "text/markdown, text/html;q=0.9, */*;q=0.1";
+const DEFAULT_ACCEPT_ENCODING = "identity";
 
 export interface FetchMarkdownOptions {
   timeoutMs?: number;
@@ -44,6 +45,7 @@ export async function fetchMarkdownPage(
       method: "GET",
       headers: {
         Accept: DEFAULT_ACCEPT,
+        "Accept-Encoding": DEFAULT_ACCEPT_ENCODING,
         "User-Agent": options.userAgent ?? "mdrip-cli",
       },
       redirect: "follow",
