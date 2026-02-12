@@ -2,27 +2,27 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 
-const FETCHMD_DIR = "fetchmd";
+const MDRIP_DIR = "mdrip";
 const SETTINGS_FILE = "settings.json";
 
-export interface FetchmdSettings {
+export interface MdripSettings {
   allowFileModifications?: boolean;
 }
 
 function getSettingsPath(cwd: string): string {
-  return join(cwd, FETCHMD_DIR, SETTINGS_FILE);
+  return join(cwd, MDRIP_DIR, SETTINGS_FILE);
 }
 
-export async function ensureFetchmdDir(cwd: string): Promise<void> {
-  const fetchmdDir = join(cwd, FETCHMD_DIR);
-  if (!existsSync(fetchmdDir)) {
-    await mkdir(fetchmdDir, { recursive: true });
+export async function ensureMdripDir(cwd: string): Promise<void> {
+  const mdripDir = join(cwd, MDRIP_DIR);
+  if (!existsSync(mdripDir)) {
+    await mkdir(mdripDir, { recursive: true });
   }
 }
 
 export async function readSettings(
   cwd: string = process.cwd(),
-): Promise<FetchmdSettings> {
+): Promise<MdripSettings> {
   const settingsPath = getSettingsPath(cwd);
 
   if (!existsSync(settingsPath)) {
@@ -31,17 +31,17 @@ export async function readSettings(
 
   try {
     const content = await readFile(settingsPath, "utf-8");
-    return JSON.parse(content) as FetchmdSettings;
+    return JSON.parse(content) as MdripSettings;
   } catch {
     return {};
   }
 }
 
 export async function writeSettings(
-  settings: FetchmdSettings,
+  settings: MdripSettings,
   cwd: string = process.cwd(),
 ): Promise<void> {
-  await ensureFetchmdDir(cwd);
+  await ensureMdripDir(cwd);
   const settingsPath = getSettingsPath(cwd);
   await writeFile(settingsPath, JSON.stringify(settings, null, 2) + "\n", "utf-8");
 }

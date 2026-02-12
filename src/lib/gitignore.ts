@@ -2,10 +2,10 @@ import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 
-const FETCHMD_ENTRY = "fetchmd/";
-const MARKER_COMMENT = "# fetchmd - markdown snapshots for agents";
+const MDRIP_ENTRY = "mdrip/";
+const MARKER_COMMENT = "# mdrip - markdown snapshots for agents";
 
-export async function hasFetchmdEntry(
+export async function hasMdripEntry(
   cwd: string = process.cwd(),
 ): Promise<boolean> {
   const gitignorePath = join(cwd, ".gitignore");
@@ -20,7 +20,7 @@ export async function hasFetchmdEntry(
 
     return lines.some((line) => {
       const trimmed = line.trim();
-      return trimmed === FETCHMD_ENTRY || trimmed === "fetchmd";
+      return trimmed === MDRIP_ENTRY || trimmed === "mdrip";
     });
   } catch {
     return false;
@@ -32,7 +32,7 @@ export async function ensureGitignore(
 ): Promise<boolean> {
   const gitignorePath = join(cwd, ".gitignore");
 
-  if (await hasFetchmdEntry(cwd)) {
+  if (await hasMdripEntry(cwd)) {
     return false;
   }
 
@@ -48,7 +48,7 @@ export async function ensureGitignore(
     }
   }
 
-  content += `${MARKER_COMMENT}\n${FETCHMD_ENTRY}\n`;
+  content += `${MARKER_COMMENT}\n${MDRIP_ENTRY}\n`;
 
   await writeFile(gitignorePath, content, "utf-8");
   return true;

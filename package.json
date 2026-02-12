@@ -1,10 +1,10 @@
 {
-  "name": "fetchmd",
+  "name": "mdrip",
   "version": "0.1.0",
   "description": "Fetch markdown snapshots of web pages using Cloudflare Markdown for Agents",
   "type": "module",
   "bin": {
-    "fetchmd": "./dist/index.js"
+    "mdrip": "./dist/index.js"
   },
   "files": [
     "dist",
@@ -12,11 +12,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/charl-kruger/fetchmd"
+    "url": "https://github.com/charl-kruger/mdrip"
   },
-  "homepage": "https://github.com/charl-kruger/fetchmd#readme",
+  "homepage": "https://github.com/charl-kruger/mdrip#readme",
   "bugs": {
-    "url": "https://github.com/charl-kruger/fetchmd/issues"
+    "url": "https://github.com/charl-kruger/mdrip/issues"
   },
   "scripts": {
     "build": "tsc",
@@ -30,7 +30,7 @@
     "type-check": "tsc --noEmit",
     "prepublishOnly": "pnpm type-check && pnpm test && pnpm build",
     "publish:dry-run": "npm publish --dry-run",
-    "publish:npm": "npm publish --access public"
+    "publish:npm": "npm publish --access=public"
   },
   "keywords": [
     "cli",

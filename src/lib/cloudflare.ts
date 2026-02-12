@@ -44,7 +44,7 @@ export async function fetchMarkdownPage(
       method: "GET",
       headers: {
         Accept: DEFAULT_ACCEPT,
-        "User-Agent": options.userAgent ?? "fetchmd-cli",
+        "User-Agent": options.userAgent ?? "mdrip-cli",
       },
       redirect: "follow",
       signal: controller.signal,

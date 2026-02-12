@@ -3,9 +3,9 @@ import { join, dirname } from "path";
 import { existsSync } from "fs";
 import type { PageEntry } from "../types.js";
 import { getPageRelativePath, normalizeUrl } from "./url.js";
-import { ensureFetchmdDir } from "./settings.js";
+import { ensureMdripDir } from "./settings.js";
 
-const FETCHMD_DIR = "fetchmd";
+const MDRIP_DIR = "mdrip";
 const PAGES_DIR = "pages";
 const SOURCES_FILE = "sources.json";
 
@@ -13,16 +13,16 @@ interface SourcesFileData {
   pages?: PageEntry[];
 }
 
-export function getFetchmdDir(cwd: string = process.cwd()): string {
-  return join(cwd, FETCHMD_DIR);
+export function getMdripDir(cwd: string = process.cwd()): string {
+  return join(cwd, MDRIP_DIR);
 }
 
 export function getPagesDir(cwd: string = process.cwd()): string {
-  return join(getFetchmdDir(cwd), PAGES_DIR);
+  return join(getMdripDir(cwd), PAGES_DIR);
 }
 
 function getSourcesPath(cwd: string): string {
-  return join(getFetchmdDir(cwd), SOURCES_FILE);
+  return join(getMdripDir(cwd), SOURCES_FILE);
 }
 
 async function readSourcesData(cwd: string): Promise<SourcesFileData | null> {
@@ -69,10 +69,10 @@ export async function savePageMarkdown(
   markdown: string,
   cwd: string = process.cwd(),
 ): Promise<string> {
-  await ensureFetchmdDir(cwd);
+  await ensureMdripDir(cwd);
 
   const relativePath = getPageRelativePath(url);
-  const fullPath = join(getFetchmdDir(cwd), relativePath);
+  const fullPath = join(getMdripDir(cwd), relativePath);
 
   const parentDir = dirname(fullPath);
   if (!existsSync(parentDir)) {
@@ -87,7 +87,7 @@ export async function removeStoredPage(
   relativePath: string,
   cwd: string = process.cwd(),
 ): Promise<boolean> {
-  const fullPath = join(getFetchmdDir(cwd), relativePath);
+  const fullPath = join(getMdripDir(cwd), relativePath);
 
   if (!existsSync(fullPath)) {
     return false;

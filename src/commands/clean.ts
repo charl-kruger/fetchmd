@@ -47,7 +47,7 @@ export async function cleanCommand(options: CleanOptions = {}): Promise<void> {
     const agentsUpdated = await updateAgentsMd({ pages: remainingPages }, cwd);
     if (agentsUpdated) {
       if (remainingPages.length === 0) {
-        console.log("✓ Removed fetchmd section from AGENTS.md");
+        console.log("✓ Removed mdrip section from AGENTS.md");
       } else {
         console.log("✓ Updated AGENTS.md");
       }

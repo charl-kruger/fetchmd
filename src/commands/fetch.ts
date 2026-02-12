@@ -37,19 +37,19 @@ async function checkFileModificationPermission(
     return storedPermission;
   }
 
-  console.log("\nfetchmd can update the following files for better integration:");
-  console.log("  • .gitignore - add fetchmd/ to ignore list");
-  console.log("  • tsconfig.json - exclude fetchmd/ from compilation");
+  console.log("\nmdrip can update the following files for better integration:");
+  console.log("  • .gitignore - add mdrip/ to ignore list");
+  console.log("  • tsconfig.json - exclude mdrip/ from compilation");
   console.log("  • AGENTS.md - add markdown snapshot reference section\n");
 
-  const allowed = await confirm("Allow fetchmd to modify these files?");
+  const allowed = await confirm("Allow mdrip to modify these files?");
 
   await setFileModificationPermission(allowed, cwd);
 
   if (allowed) {
-    console.log("✓ Permission granted - saved to fetchmd/settings.json\n");
+    console.log("✓ Permission granted - saved to mdrip/settings.json\n");
   } else {
-    console.log("✗ Permission denied - saved to fetchmd/settings.json\n");
+    console.log("✗ Permission denied - saved to mdrip/settings.json\n");
   }
 
   return allowed;
@@ -79,7 +79,7 @@ async function fetchUrlInput(
   try {
     const existing = await getPageInfo(normalizedUrl, cwd);
     if (existing) {
-      console.log(`  → Updating existing snapshot at fetchmd/${existing.path}`);
+      console.log(`  → Updating existing snapshot at mdrip/${existing.path}`);
     }
 
     const response = await fetchMarkdownPage(normalizedUrl, {
@@ -90,7 +90,7 @@ async function fetchUrlInput(
     const storageUrl = normalizeUrl(response.resolvedUrl || normalizedUrl);
     const outputPath = await savePageMarkdown(storageUrl, response.markdown, cwd);
 
-    console.log(`  ✓ Saved to fetchmd/${outputPath}`);
+    console.log(`  ✓ Saved to mdrip/${outputPath}`);
 
     if (response.markdownTokens !== undefined) {
       console.log(`  → x-markdown-tokens: ${response.markdownTokens}`);
@@ -178,12 +178,12 @@ export async function fetchCommand(
   if (canModifyFiles) {
     const gitignoreUpdated = await ensureGitignore(cwd);
     if (gitignoreUpdated) {
-      console.log("✓ Added fetchmd/ to .gitignore");
+      console.log("✓ Added mdrip/ to .gitignore");
     }
 
     const tsconfigUpdated = await ensureTsconfigExclude(cwd);
     if (tsconfigUpdated) {
-      console.log("✓ Added fetchmd/ to tsconfig.json exclude");
+      console.log("✓ Added mdrip/ to tsconfig.json exclude");
     }
   }
 

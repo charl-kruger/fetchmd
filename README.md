@@ -1,6 +1,13 @@
-# fetchmd
+# mdrip
 
 Fetch markdown snapshots of web pages using Cloudflare's Markdown for Agents feature, so coding agents can consume clean structured content instead of HTML.
+
+## AI Skills
+
+This repo also includes an AI-consumable skills catalog in `skills/`, following the [agentskills](https://agentskills.io) format.
+
+- Skill index: `skills/README.md`
+- mdrip skill: `skills/mdrip/SKILL.md`
 
 ## Why
 
@@ -9,21 +16,21 @@ For agent workflows, markdown is often better than HTML:
 - lower token overhead
 - easier chunking and context management
 
-`fetchmd` requests pages with `Accept: text/markdown`, stores the markdown locally, and tracks fetched pages in an index.
+`mdrip` requests pages with `Accept: text/markdown`, stores the markdown locally, and tracks fetched pages in an index.
 
-If a site does not return `text/markdown`, `fetchmd` can automatically fall back to converting `text/html` into markdown.
+If a site does not return `text/markdown`, `mdrip` can automatically fall back to converting `text/html` into markdown.
 The fallback uses an in-project converter optimized for common documentation/blog content (headings, links, lists, code blocks, tables, blockquotes).
 
 ## Installation
 
 ```bash
-npm install -g fetchmd
+npm install -g mdrip
 ```
 
 Or use with `npx`:
 
 ```bash
-npx fetchmd <url>
+npx mdrip <url>
 ```
 
 ## Usage
@@ -32,64 +39,64 @@ npx fetchmd <url>
 
 ```bash
 # Fetch one page
-fetchmd https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
+mdrip https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
 
 # Fetch multiple pages
-fetchmd https://blog.cloudflare.com/markdown-for-agents/ https://developers.cloudflare.com/
+mdrip https://blog.cloudflare.com/markdown-for-agents/ https://developers.cloudflare.com/
 
 # Optional timeout override (ms)
-fetchmd https://example.com --timeout 45000
+mdrip https://example.com --timeout 45000
 
 # Disable HTML fallback (strict Cloudflare markdown only)
-fetchmd https://example.com --no-html-fallback
+mdrip https://example.com --no-html-fallback
 ```
 
 ### List fetched pages
 
 ```bash
-fetchmd list
-fetchmd list --json
+mdrip list
+mdrip list --json
 ```
 
 ### Remove pages
 
 ```bash
-fetchmd remove https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
+mdrip remove https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
 ```
 
 ### Clean snapshots
 
 ```bash
 # Remove all
-fetchmd clean
+mdrip clean
 
 # Remove only one domain
-fetchmd clean --domain developers.cloudflare.com
+mdrip clean --domain developers.cloudflare.com
 ```
 
 ## File modifications
 
-On first run, fetchmd can optionally update:
-- `.gitignore` (adds `fetchmd/`)
-- `tsconfig.json` (excludes `fetchmd`)
+On first run, mdrip can optionally update:
+- `.gitignore` (adds `mdrip/`)
+- `tsconfig.json` (excludes `mdrip`)
 - `AGENTS.md` (adds a section pointing agents to snapshots)
 
-Choice is stored in `fetchmd/settings.json`.
+Choice is stored in `mdrip/settings.json`.
 
 Use flags to skip prompt:
 
 ```bash
 # allow updates
-fetchmd https://example.com --modify
+mdrip https://example.com --modify
 
 # deny updates
-fetchmd https://example.com --modify=false
+mdrip https://example.com --modify=false
 ```
 
 ## Output
 
 ```text
-fetchmd/
+mdrip/
 ├── settings.json
 ├── sources.json
 └── pages/
@@ -104,7 +111,7 @@ fetchmd/
 
 - Node.js 18+
 - The target site must return markdown for `Accept: text/markdown` (Cloudflare Markdown for Agents enabled).
-- If a page does not return `text/markdown`, fetchmd can convert `text/html` into markdown fallback unless `--no-html-fallback` is used.
+- If a page does not return `text/markdown`, mdrip can convert `text/html` into markdown fallback unless `--no-html-fallback` is used.
 
 ## Publishing to npm
 

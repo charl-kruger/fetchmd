@@ -2,23 +2,23 @@ import { readFile, writeFile, rm } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 import type { PageEntry, SourcesIndex } from "../types.js";
-import { ensureFetchmdDir } from "./settings.js";
+import { ensureMdripDir } from "./settings.js";
 
 const AGENTS_FILE = "AGENTS.md";
-const FETCHMD_DIR = "fetchmd";
+const MDRIP_DIR = "mdrip";
 const SOURCES_FILE = "sources.json";
 const SECTION_TITLE = "## Website Markdown Reference";
-const SECTION_MARKER = "<!-- fetchmd:start -->";
-const SECTION_END_MARKER = "<!-- fetchmd:end -->";
+const SECTION_MARKER = "<!-- mdrip:start -->";
+const SECTION_END_MARKER = "<!-- mdrip:end -->";
 
 function getSectionContent(): string {
   return `${SECTION_MARKER}
 
 ${SECTION_TITLE}
 
-Markdown snapshots of web pages are available in \`fetchmd/\` for deeper implementation context in AI workflows.
+Markdown snapshots of web pages are available in \`mdrip/\` for deeper implementation context in AI workflows.
 
-See \`fetchmd/sources.json\` for the list of available pages and metadata such as token estimates.
+See \`mdrip/sources.json\` for the list of available pages and metadata such as token estimates.
 
 Use these snapshots when your agent needs structured page content instead of raw HTML.
 
@@ -27,15 +27,15 @@ Use these snapshots when your agent needs structured page content instead of raw
 To fetch markdown for one or more pages, run:
 
 \`\`\`bash
-npx fetchmd <url>
-npx fetchmd https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
+npx mdrip <url>
+npx mdrip https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
 \`\`\`
 
 ${SECTION_END_MARKER}`;
 }
 
 function getSourcesPath(cwd: string): string {
-  return join(cwd, FETCHMD_DIR, SOURCES_FILE);
+  return join(cwd, MDRIP_DIR, SOURCES_FILE);
 }
 
 function extractSection(content: string): string | null {
@@ -53,7 +53,7 @@ export async function updatePageIndex(
   sources: { pages: PageEntry[] },
   cwd: string = process.cwd(),
 ): Promise<void> {
-  await ensureFetchmdDir(cwd);
+  await ensureMdripDir(cwd);
   const sourcesPath = getSourcesPath(cwd);
 
   if (sources.pages.length === 0) {
@@ -115,7 +115,7 @@ ${newSection}
   return true;
 }
 
-export async function removeFetchmdSection(
+export async function removeMdripSection(
   cwd: string = process.cwd(),
 ): Promise<boolean> {
   const agentsPath = join(cwd, AGENTS_FILE);
@@ -165,5 +165,5 @@ export async function updateAgentsMd(
     return ensureAgentsMd(cwd);
   }
 
-  return removeFetchmdSection(cwd);
+  return removeMdripSection(cwd);
 }

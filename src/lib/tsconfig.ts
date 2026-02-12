@@ -2,7 +2,7 @@ import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 
-const FETCHMD_DIR = "fetchmd";
+const MDRIP_DIR = "mdrip";
 
 interface TsConfig {
   exclude?: string[];
@@ -13,7 +13,7 @@ export function hasTsConfig(cwd: string = process.cwd()): boolean {
   return existsSync(join(cwd, "tsconfig.json"));
 }
 
-export async function hasFetchmdExclude(
+export async function hasMdripExclude(
   cwd: string = process.cwd(),
 ): Promise<boolean> {
   const tsconfigPath = join(cwd, "tsconfig.json");
@@ -32,9 +32,9 @@ export async function hasFetchmdExclude(
 
     return config.exclude.some(
       (entry) =>
-        entry === FETCHMD_DIR ||
-        entry === `${FETCHMD_DIR}/` ||
-        entry === `./${FETCHMD_DIR}`,
+        entry === MDRIP_DIR ||
+        entry === `${MDRIP_DIR}/` ||
+        entry === `./${MDRIP_DIR}`,
     );
   } catch {
     return false;
@@ -50,7 +50,7 @@ export async function ensureTsconfigExclude(
     return false;
   }
 
-  if (await hasFetchmdExclude(cwd)) {
+  if (await hasMdripExclude(cwd)) {
     return false;
   }
 
@@ -62,7 +62,7 @@ export async function ensureTsconfigExclude(
       config.exclude = [];
     }
 
-    config.exclude.push(FETCHMD_DIR);
+    config.exclude.push(MDRIP_DIR);
 
     await writeFile(tsconfigPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
     return true;

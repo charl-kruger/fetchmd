@@ -12,7 +12,7 @@ export async function listCommand(options: ListOptions = {}): Promise<void> {
 
   if (sources.pages.length === 0) {
     console.log("No markdown pages fetched yet.");
-    console.log("\nUse `fetchmd <url>` to fetch markdown for a page.");
+    console.log("\nUse `mdrip <url>` to fetch markdown for a page.");
     return;
   }
 
@@ -48,7 +48,7 @@ export async function listCommand(options: ListOptions = {}): Promise<void> {
       });
 
       console.log(`  ${page.url}`);
-      console.log(`    Path: fetchmd/${page.path}`);
+      console.log(`    Path: mdrip/${page.path}`);
       console.log(`    Fetched: ${formattedDate}`);
       if (page.source) {
         const sourceLabel =

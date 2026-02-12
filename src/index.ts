@@ -9,7 +9,7 @@ import { cleanCommand } from "./commands/clean.js";
 const program = new Command();
 
 program
-  .name("fetchmd")
+  .name("mdrip")
   .description(
     "Fetch markdown snapshots for URLs using Cloudflare Markdown for Agents",
   )
