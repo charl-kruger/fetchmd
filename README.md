@@ -13,7 +13,7 @@ AI agents and LLMs work better with markdown than HTML. Feeding raw HTML into a 
 - **Works everywhere** — CLI, Node.js, Cloudflare Workers, or via remote MCP
 - **Token-aware** — reports estimated token counts so you can manage context budgets
 
-Sites that support [Cloudflare's Markdown for Agents](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/) return markdown natively at the edge. For all other sites, mdrip's built-in converter handles headings, links, lists, code blocks, tables, blockquotes, and more.
+Sites that support [Cloudflare's Markdown for Agents](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/) return markdown natively at the edge. For all other sites, mdrip's built-in converter handles headings, links, lists, code blocks, tables, blockquotes, and more, while filtering hidden/non-visible content (including hidden attributes, `aria-hidden`, inline hidden styles, templates/forms, and HTML comments).
 
 ## Installation
 
@@ -85,6 +85,21 @@ mdrip https://example.com --raw | your-agent-cli
 npm install mdrip
 ```
 
+### Method reference
+
+| Import path | Method | Returns | Purpose |
+|---|---|---|---|
+| `mdrip` | `fetchMarkdown(url, options?)` | `Promise<MarkdownResponse>` | Fetch one URL to markdown with metadata |
+| `mdrip` | `fetchRawMarkdown(url, options?)` | `Promise<string>` | Fetch one URL to markdown string only |
+| `mdrip/node` | `fetchMarkdown(url, options?)` | `Promise<MarkdownResponse>` | Node entrypoint alias for in-memory fetch |
+| `mdrip/node` | `fetchRawMarkdown(url, options?)` | `Promise<string>` | Node entrypoint alias for markdown-only fetch |
+| `mdrip/node` | `fetchToStore(url, options?)` | `Promise<FetchResult>` | Fetch one URL and persist to `mdrip/pages/...` |
+| `mdrip/node` | `fetchManyToStore(urls, options?)` | `Promise<FetchResult[]>` | Fetch many URLs and persist successful results |
+| `mdrip/node` | `listStoredPages(cwd?)` | `Promise<PageEntry[]>` | List tracked snapshots from `mdrip/sources.json` |
+
+`FetchMarkdownOptions` supports: `timeoutMs`, `userAgent`, `htmlFallback`, `fetchImpl`.
+`StoreFetchOptions` extends that with `cwd`.
+
 ### Workers / Edge / In-memory
 
 ```ts
@@ -113,16 +128,53 @@ if (result.success) {
 const pages = await listStoredPages(process.cwd());
 ```
 
-### Available exports
+## Remote MCP + HTTP API
 
-| Import | Environment | Functions |
-|--------|-------------|-----------|
-| `mdrip` | Workers, edge, browser | `fetchMarkdown()`, `fetchRawMarkdown()` |
-| `mdrip/node` | Node.js | `fetchToStore()`, `fetchManyToStore()`, `listStoredPages()` |
+mdrip is available as a remote service at **`mdrip.createmcp.dev`** with MCP transports and a direct JSON API.
 
-## Remote MCP Server
+| Endpoint | Transport | Use case |
+|---|---|---|
+| `/mcp` | Streamable HTTP MCP | Recommended for MCP clients |
+| `/sse` | SSE MCP | Legacy MCP client compatibility |
+| `/api` | JSON over HTTP | Direct non-MCP integration |
 
-mdrip is available as a remote MCP server at **`mdrip.createmcp.dev`** — no install required. Any MCP-compatible client can connect and use the `fetch_markdown` and `batch_fetch_markdown` tools.
+### MCP tools
+
+`fetch_markdown`:
+- Inputs: `url` (required), `timeout_ms` (optional), `html_fallback` (optional)
+- Output: markdown + metadata (`resolvedUrl`, `status`, `contentType`, `source`, `markdownTokens`, `contentSignal`)
+
+`batch_fetch_markdown`:
+- Inputs: `urls` (required array, 1-10), `timeout_ms` (optional), `html_fallback` (optional)
+- Output: one result per URL, with success/error details
+
+### HTTP API (`/api`)
+
+`GET /api` expects query params:
+- `url` (required)
+- `timeout` (optional ms)
+- `html_fallback` (optional `true`/`false`)
+
+```bash
+curl "https://mdrip.createmcp.dev/api?url=https://example.com&timeout=30000&html_fallback=true"
+```
+
+`POST /api` supports both single and batch bodies:
+
+```json
+{ "url": "https://example.com", "timeout_ms": 30000, "html_fallback": true }
+```
+
+```json
+{
+  "urls": ["https://example.com", "https://example.com/docs"],
+  "timeout_ms": 30000,
+  "html_fallback": true
+}
+```
+
+Single responses return one fetch result object.
+Batch responses return `{ "results": [...] }` with `success: true|false` per URL.
 
 ### Claude Desktop
 

@@ -17,6 +17,14 @@ const SKIP_TAGS = new Set([
   "form",
   "input",
   "button",
+  "template",
+  "select",
+  "option",
+  "textarea",
+  "object",
+  "embed",
+  "dialog",
+  "nav",
 ]);
 
 const BLOCK_TAGS = new Set([
@@ -37,6 +45,9 @@ const BLOCK_TAGS = new Set([
   "dd",
 ]);
 
+const HIDDEN_STYLE_RE =
+  /(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0(?:px|em|rem|%)?)\s*(?:;|$)/i;
+
 interface RenderContext {
   baseUrl?: string;
   inPre: boolean;
@@ -49,6 +60,20 @@ function isElement(node: DomNode): node is Element {
 
 function isText(node: DomNode): node is DataNode {
   return node.type === "text";
+}
+
+function isHiddenElement(node: Element): boolean {
+  const attribs = node.attribs;
+  if (!attribs) return false;
+
+  if (attribs.hidden !== undefined) return true;
+
+  if (attribs["aria-hidden"] === "true") return true;
+
+  const style = attribs.style;
+  if (style && HIDDEN_STYLE_RE.test(style)) return true;
+
+  return false;
 }
 
 function getChildren(node: DomNode): ChildNode[] {
@@ -222,10 +247,36 @@ function renderTable(node: Element, ctx: RenderContext): string {
   return block(markdownRows.join("\n"));
 }
 
+function detectCodeLanguage(node: Element): string {
+  // Check the <pre> element itself
+  const preClass = node.attribs.class || "";
+  const preLang = node.attribs["data-lang"] || node.attribs["data-language"] || "";
+  if (preLang) return preLang;
+
+  const preMatch = preClass.match(/(?:language|lang)-([a-zA-Z0-9+-]+)/);
+  if (preMatch) return preMatch[1];
+
+  // Check child <code> element (Prism, highlight.js, etc.)
+  for (const child of getChildren(node)) {
+    if (isElement(child) && child.name === "code") {
+      const codeClass = child.attribs.class || "";
+      const codeLang = child.attribs["data-lang"] || child.attribs["data-language"] || "";
+      if (codeLang) return codeLang;
+
+      const codeMatch = codeClass.match(/(?:language|lang|highlight)-([a-zA-Z0-9+-]+)/);
+      if (codeMatch) return codeMatch[1];
+
+      // hljs uses class="hljs language-xxx" or class="xxx" directly
+      const hljsMatch = codeClass.match(/\bhljs\s+([a-zA-Z0-9+-]+)/);
+      if (hljsMatch) return hljsMatch[1];
+    }
+  }
+
+  return "";
+}
+
 function renderPre(node: Element): string {
-  const className = node.attribs.class || "";
-  const languageMatch = className.match(/(?:language|lang)-([a-zA-Z0-9+-]+)/);
-  const language = languageMatch ? languageMatch[1] : "";
+  const language = detectCodeLanguage(node);
 
   const raw = getTextContent(node).replace(/\r\n/g, "\n").trimEnd();
   if (!raw) {
@@ -245,12 +296,16 @@ function renderNode(node: DomNode, ctx: RenderContext): string {
   }
 
   if (!isElement(node)) {
-    return renderChildren(node, ctx);
+    return "";
   }
 
   const tag = node.name.toLowerCase();
 
   if (SKIP_TAGS.has(tag)) {
+    return "";
+  }
+
+  if (isHiddenElement(node)) {
     return "";
   }
 
@@ -283,6 +338,12 @@ function renderNode(node: DomNode, ctx: RenderContext): string {
       const text = renderInlineChildren(getChildren(node), ctx).trim();
       return text ? `*${text}*` : "";
     }
+    case "del":
+    case "s":
+    case "strike": {
+      const text = renderInlineChildren(getChildren(node), ctx).trim();
+      return text ? `~~${text}~~` : "";
+    }
     case "code": {
       const text = renderInlineChildren(getChildren(node), { ...ctx, inPre: true }).trim();
       if (!text) {
@@ -296,7 +357,7 @@ function renderNode(node: DomNode, ctx: RenderContext): string {
       const href = node.attribs.href;
       const text = renderInlineChildren(getChildren(node), ctx).trim();
 
-      if (!href) {
+      if (!href || href.startsWith("javascript:")) {
         return text;
       }
 
@@ -308,12 +369,19 @@ function renderNode(node: DomNode, ctx: RenderContext): string {
       const src = node.attribs.src;
       const alt = (node.attribs.alt || "image").trim();
 
-      if (!src) {
+      if (!src || src.startsWith("data:")) {
         return alt;
       }
 
       const resolvedSrc = resolveHref(src, ctx.baseUrl);
       return `![${alt}](${resolvedSrc})`;
+    }
+    case "picture": {
+      // Extract the <img> from within <picture>
+      const img = getChildren(node).find(
+        (child): child is Element => isElement(child) && child.name === "img",
+      );
+      return img ? renderNode(img, ctx) : "";
     }
     case "ul":
       return renderList(node, false, ctx);

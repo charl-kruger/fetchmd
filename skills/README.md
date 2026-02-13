@@ -15,11 +15,13 @@ npx skills add charl-kruger/mdrip
 
 ## Available skills
 
-- `skills/mdrip`: Pull website pages into local markdown snapshots using Cloudflare Markdown for Agents, with HTML-to-markdown fallback.
-- Includes `--raw` mode for agent-first flows (for example OpenClaw) that need markdown streamed to stdout with no local writes.
-- Includes programmatic usage patterns:
-  - `mdrip` for in-memory markdown (`fetchMarkdown`, `fetchRawMarkdown`) in Workers/agents.
-  - `mdrip/node` for filesystem storage helpers (`fetchToStore`, `fetchManyToStore`, `listStoredPages`) in Node.js apps.
+- `skills/mdrip`: Pull website pages into local markdown snapshots using Cloudflare Markdown for Agents, with HTML-to-markdown fallback and remote MCP/API support.
+- Method coverage in the skill:
+  - CLI commands: `mdrip <urls...>`, `mdrip list`, `mdrip remove|rm`, `mdrip clean`
+  - Package `mdrip`: `fetchMarkdown`, `fetchRawMarkdown`
+  - Package `mdrip/node`: `fetchMarkdown`, `fetchRawMarkdown`, `fetchToStore`, `fetchManyToStore`, `listStoredPages`
+  - Remote MCP tools: `fetch_markdown`, `batch_fetch_markdown`
+  - Remote HTTP endpoint: `/api` (`GET` and `POST`, including batch mode)
 
 ## Validation
 
