@@ -16,6 +16,7 @@ export interface FetchOptions {
   allowModifications?: boolean;
   timeoutMs?: number;
   htmlFallback?: boolean;
+  raw?: boolean;
 }
 
 async function checkFileModificationPermission(
@@ -131,6 +132,57 @@ async function fetchUrlInput(
   }
 }
 
+async function fetchRawUrlInput(
+  spec: string,
+  timeoutMs?: number,
+  htmlFallback?: boolean,
+): Promise<FetchResult> {
+  let normalizedUrl: string;
+
+  try {
+    normalizedUrl = normalizeUrl(spec);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(message);
+    return {
+      url: spec,
+      path: "",
+      success: false,
+      error: message,
+    };
+  }
+
+  try {
+    const response = await fetchMarkdownPage(normalizedUrl, {
+      timeoutMs,
+      htmlFallback,
+    });
+
+    process.stdout.write(response.markdown);
+
+    return {
+      url: normalizedUrl,
+      resolvedUrl: response.resolvedUrl,
+      path: "",
+      success: true,
+      status: response.status,
+      contentType: response.contentType,
+      markdownTokens: response.markdownTokens,
+      contentSignal: response.contentSignal,
+      source: response.source,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(message);
+    return {
+      url: normalizedUrl,
+      path: "",
+      success: false,
+      error: message,
+    };
+  }
+}
+
 function mergeResults(existing: PageEntry[], results: FetchResult[]): PageEntry[] {
   const now = new Date().toISOString();
   const merged = [...existing];
@@ -169,6 +221,18 @@ export async function fetchCommand(
 ): Promise<FetchResult[]> {
   const cwd = options.cwd || process.cwd();
   const results: FetchResult[] = [];
+
+  if (options.raw) {
+    for (const spec of urls) {
+      const result = await fetchRawUrlInput(
+        spec,
+        options.timeoutMs,
+        options.htmlFallback,
+      );
+      results.push(result);
+    }
+    return results;
+  }
 
   const canModifyFiles = await checkFileModificationPermission(
     cwd,

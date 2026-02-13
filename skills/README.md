@@ -16,6 +16,7 @@ npx skills add charl-kruger/mdrip
 ## Available skills
 
 - `skills/mdrip`: Pull website pages into local markdown snapshots using Cloudflare Markdown for Agents, with HTML-to-markdown fallback.
+- Includes `--raw` mode for agent-first flows (for example OpenClaw) that need markdown streamed to stdout with no local writes.
 
 ## Validation
 

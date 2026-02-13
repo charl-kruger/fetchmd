@@ -13,7 +13,7 @@ program
   .description(
     "Fetch markdown snapshots for URLs using Cloudflare Markdown for Agents",
   )
-  .version("0.1.1")
+  .version("0.1.2")
   .option("--cwd <path>", "working directory (default: current directory)");
 
 program
@@ -38,10 +38,19 @@ program
     "--no-html-fallback",
     "disable HTML->Markdown fallback when text/markdown is unavailable",
   )
+  .option(
+    "--raw",
+    "print raw markdown to stdout without writing files or updating settings",
+  )
   .action(
     async (
       urls: string[],
-      options: { modify?: boolean; timeout?: number; htmlFallback?: boolean },
+      options: {
+        modify?: boolean;
+        timeout?: number;
+        htmlFallback?: boolean;
+        raw?: boolean;
+      },
       command: Command,
     ) => {
       const globalOptions = command.optsWithGlobals<{ cwd?: string }>();
@@ -51,11 +60,17 @@ program
         return;
       }
 
+      if (options.raw && urls.length !== 1) {
+        command.error("--raw requires exactly one URL");
+        return;
+      }
+
       await fetchCommand(urls, {
         cwd: globalOptions.cwd,
         allowModifications: options.modify,
         timeoutMs: options.timeout,
         htmlFallback: options.htmlFallback,
+        raw: options.raw,
       });
     },
   );

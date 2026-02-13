@@ -74,6 +74,21 @@ mdrip https://example.com --timeout 45000
 
 # Disable HTML fallback (strict Cloudflare markdown only)
 mdrip https://example.com --no-html-fallback
+
+# Print raw page markdown to stdout (no files/settings changes, no prompts)
+mdrip https://blog.cloudflare.com/markdown-for-agents/ --raw
+```
+
+### Raw mode for agents (OpenClaw, etc.)
+
+`--raw` is designed for agent runtimes that only need in-memory content.
+It prints markdown to stdout and skips settings prompts and all file writes.
+
+This is useful for flows with OpenClaw and similar AI tools where you want to pipe page content directly into your agent loop.
+
+```bash
+# stream markdown directly to another process
+mdrip https://blog.cloudflare.com/markdown-for-agents/ --raw
 ```
 
 ### List fetched pages
@@ -117,6 +132,8 @@ mdrip https://example.com --modify
 # deny updates
 mdrip https://example.com --modify=false
 ```
+
+`--raw` mode bypasses this entire flow and never writes settings or snapshots.
 
 ## Output
 
