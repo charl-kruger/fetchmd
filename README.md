@@ -2,6 +2,27 @@
 
 Fetch markdown snapshots of web pages using Cloudflare's Markdown for Agents feature, so coding agents can consume clean structured content instead of HTML.
 
+## Benchmark Snapshot
+
+Measured on February 13, 2026 across a few popular pages (values vary slightly as pages change):
+
+| Page | Mode | HTML chars | Markdown chars | Chars saved | HTML tokens* | Markdown tokens* | Tokens saved |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| blog.cloudflare.com/markdown-for-agents | cloudflare-markdown | 289,820 | 14,807 | 94.9% | 72,455 | 3,702 | 94.9% |
+| developers.cloudflare.com/fundamentals/reference/markdown-for-agents | cloudflare-markdown | 220,089 | 9,534 | 95.7% | 55,022 | 2,384 | 95.7% |
+| en.wikipedia.org/wiki/Markdown | html-fallback | 192,322 | 52,448 | 72.7% | 48,081 | 13,112 | 72.7% |
+| github.com/cloudflare/skills | html-fallback | 291,274 | 10,915 | 96.3% | 72,817 | 2,729 | 96.3% |
+| **Average** | - | - | - | **89.9%** | - | - | **89.9%** |
+
+*Tokens estimated with mdrip `estimateTokenCount` (chars/4). Markdown tokens use `x-markdown-tokens` when provided by Cloudflare.*
+
+Re-run benchmark:
+
+```bash
+pnpm build
+pnpm benchmark
+```
+
 ## AI Skills
 
 This repo also includes an AI-consumable skills catalog in `skills/`, following the [agentskills](https://agentskills.io) format.
@@ -57,48 +78,6 @@ Or use with `npx`:
 ```bash
 npx mdrip <url>
 ```
-
-For programmatic usage in Node.js or Workers:
-
-```bash
-npm install mdrip
-```
-
-## Programmatic API
-
-### Node.js (fetch and store)
-
-```ts
-import { fetchToStore, listStoredPages } from "mdrip/node";
-
-const result = await fetchToStore("https://developers.cloudflare.com/", {
-  cwd: process.cwd(),
-});
-
-if (!result.success) {
-  throw new Error(result.error || "Failed to fetch page");
-}
-
-const pages = await listStoredPages(process.cwd());
-console.log(pages.map((p) => p.path));
-```
-
-### Cloudflare Workers / Agent runtimes (raw in-memory markdown)
-
-```ts
-import { fetchMarkdown } from "mdrip";
-
-const page = await fetchMarkdown(
-  "https://blog.cloudflare.com/markdown-for-agents/",
-);
-
-console.log(page.markdownTokens);
-console.log(page.markdown);
-```
-
-Available programmatic methods:
-- `mdrip` (Workers-safe): `fetchMarkdown(url, options)`, `fetchRawMarkdown(url, options)`
-- `mdrip/node` (filesystem features): `fetchToStore(url, options)`, `fetchManyToStore(urls, options)`, `listStoredPages(cwd?)`
 
 ## Usage
 
@@ -196,6 +175,48 @@ mdrip/
 - Node.js 18+
 - The target site must return markdown for `Accept: text/markdown` (Cloudflare Markdown for Agents enabled).
 - If a page does not return `text/markdown`, mdrip can convert `text/html` into markdown fallback unless `--no-html-fallback` is used.
+
+## Programmatic API
+
+For programmatic usage in Node.js or Workers:
+
+```bash
+npm install mdrip
+```
+
+### Node.js (fetch and store)
+
+```ts
+import { fetchToStore, listStoredPages } from "mdrip/node";
+
+const result = await fetchToStore("https://developers.cloudflare.com/", {
+  cwd: process.cwd(),
+});
+
+if (!result.success) {
+  throw new Error(result.error || "Failed to fetch page");
+}
+
+const pages = await listStoredPages(process.cwd());
+console.log(pages.map((p) => p.path));
+```
+
+### Cloudflare Workers / Agent runtimes (raw in-memory markdown)
+
+```ts
+import { fetchMarkdown } from "mdrip";
+
+const page = await fetchMarkdown(
+  "https://blog.cloudflare.com/markdown-for-agents/",
+);
+
+console.log(page.markdownTokens);
+console.log(page.markdown);
+```
+
+Available programmatic methods:
+- `mdrip` (Workers-safe): `fetchMarkdown(url, options)`, `fetchRawMarkdown(url, options)`
+- `mdrip/node` (filesystem features): `fetchToStore(url, options)`, `fetchManyToStore(urls, options)`, `listStoredPages(cwd?)`
 
 ## Publishing to npm
 
