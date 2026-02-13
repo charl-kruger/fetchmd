@@ -22,6 +22,7 @@ npx skills add charl-kruger/mdrip
   - Package `mdrip/node`: `fetchMarkdown`, `fetchRawMarkdown`, `fetchToStore`, `fetchManyToStore`, `listStoredPages`
   - Remote MCP tools: `fetch_markdown`, `batch_fetch_markdown`
   - Remote HTTP endpoint: `/api` (`GET` and `POST`, including batch mode)
+- `skills/mdrip-openclaw`: OpenClaw-focused workflow for using `mdrip` in `--raw` mode, workspace snapshot mode, and skill-based execution.
 
 ## Validation
 

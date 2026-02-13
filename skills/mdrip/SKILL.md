@@ -81,6 +81,8 @@ Shared options:
 - `userAgent`: override user agent
 - `htmlFallback`: enable/disable HTML fallback
 - `fetchImpl`: custom fetch implementation
+- `tokenModel`: model alias used to choose tokenizer encoding
+- `tokenEncoding`: explicit tokenizer (`o200k_base` or `cl100k_base`)
 - `cwd` (store helpers only): working directory root
 
 ## Remote methods

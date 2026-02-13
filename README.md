@@ -97,7 +97,8 @@ npm install mdrip
 | `mdrip/node` | `fetchManyToStore(urls, options?)` | `Promise<FetchResult[]>` | Fetch many URLs and persist successful results |
 | `mdrip/node` | `listStoredPages(cwd?)` | `Promise<PageEntry[]>` | List tracked snapshots from `mdrip/sources.json` |
 
-`FetchMarkdownOptions` supports: `timeoutMs`, `userAgent`, `htmlFallback`, `fetchImpl`.
+`FetchMarkdownOptions` supports: `timeoutMs`, `userAgent`, `htmlFallback`, `fetchImpl`, `tokenModel`, `tokenEncoding`.
+Default token encoding is `o200k_base` (recommended for GPT-4o/4.1/5-family style counting).
 `StoreFetchOptions` extends that with `cwd`.
 
 ### Workers / Edge / In-memory
@@ -201,6 +202,54 @@ claude mcp add mdrip-remote --transport sse https://mdrip.createmcp.dev/sse
 
 Enter `mdrip.createmcp.dev/sse` at [playground.ai.cloudflare.com](https://playground.ai.cloudflare.com/).
 
+## OpenClaw Integration
+
+### Option 1: Dedicated OpenClaw skill (recommended)
+
+Install skills from this repo in your OpenClaw workspace:
+
+```bash
+cd ~/.openclaw/workspace
+npx skills add charl-kruger/mdrip
+```
+
+Enable the OpenClaw-focused skill in `~/.openclaw/openclaw.json`:
+
+```json
+{
+  "skills": {
+    "entries": {
+      "mdrip-openclaw": {
+        "enabled": true
+      }
+    }
+  }
+}
+```
+
+If you want OpenClaw to load skills directly from this local repository:
+
+```json
+{
+  "skills": {
+    "load": {
+      "extraDirs": ["<absolute-path-to-fetchmd>/skills"]
+    }
+  }
+}
+```
+
+### Option 2: Direct CLI usage in OpenClaw workflows
+
+```bash
+# In-memory markdown only (best for tool pipelines)
+mdrip https://example.com/docs --raw
+
+# Persist reusable snapshots in workspace
+mdrip https://example.com/docs https://example.com/api
+mdrip list --json
+```
+
 ## File modifications
 
 On first run, mdrip can optionally update:
@@ -227,23 +276,28 @@ mdrip/
 
 ## Benchmark
 
-Measured across popular pages (values vary as pages change):
+Measured on **February 13, 2026** (values vary as pages change):
 
 | Page | Mode | Chars saved | Tokens saved |
 |------|------|------------:|-------------:|
-| blog.cloudflare.com/markdown-for-agents | cloudflare-markdown | 94.9% | 94.9% |
-| developers.cloudflare.com/.../markdown-for-agents | cloudflare-markdown | 95.7% | 95.7% |
-| en.wikipedia.org/wiki/Markdown | html-fallback | 72.7% | 72.7% |
-| github.com/cloudflare/skills | html-fallback | 96.3% | 96.3% |
-| **Average** | | **89.9%** | **89.9%** |
+| blog.cloudflare.com/markdown-for-agents | cloudflare-markdown | 94.3% | 96.2% |
+| developers.cloudflare.com/.../markdown-for-agents | cloudflare-markdown | 95.5% | 97.3% |
+| en.wikipedia.org/wiki/Markdown | html-fallback | 73.8% | 76.4% |
+| github.com/cloudflare/skills | html-fallback | 96.7% | 98.0% |
+| **Average** | | **90.1%** | **92.0%** |
 
 ```bash
 pnpm build && pnpm benchmark
 ```
 
+Token counts use mdrip's tokenizer-based estimator (default encoding: `o200k_base`).
+
 ## AI Skills
 
 This repo includes an AI-consumable skills catalog in `skills/`, following the [agentskills](https://agentskills.io) format.
+
+- `mdrip`: general-purpose mdrip skill (CLI, package APIs, remote MCP/API)
+- `mdrip-openclaw`: OpenClaw-focused skill and config/workflow reference
 
 ```bash
 npx skills add charl-kruger/mdrip

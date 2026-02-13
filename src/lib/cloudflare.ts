@@ -1,10 +1,11 @@
 import { convertHtmlToMarkdown, estimateTokenCount } from "./html-to-markdown.js";
+import type { TokenEstimateOptions } from "./token-count.js";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_ACCEPT = "text/markdown, text/html;q=0.9, */*;q=0.1";
 const DEFAULT_ACCEPT_ENCODING = "identity";
 
-export interface FetchMarkdownOptions {
+export interface FetchMarkdownOptions extends TokenEstimateOptions {
   timeoutMs?: number;
   userAgent?: string;
   htmlFallback?: boolean;
@@ -62,13 +63,14 @@ export async function fetchMarkdownPage(
 
     if (normalizedType.includes("text/markdown")) {
       const markdown = await response.text();
+      const headerCount = parseTokenHeader(response.headers.get("x-markdown-tokens"));
 
       return {
         markdown,
         status: response.status,
         contentType,
         resolvedUrl: response.url || url,
-        markdownTokens: parseTokenHeader(response.headers.get("x-markdown-tokens")),
+        markdownTokens: headerCount ?? estimateTokenCount(markdown, options),
         contentSignal: response.headers.get("content-signal") || undefined,
         source: "cloudflare-markdown",
       };

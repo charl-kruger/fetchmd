@@ -32,6 +32,24 @@ describe("fetchMarkdownPage", () => {
     ).toBe("identity");
   });
 
+  it("estimates tokens when markdown response omits x-markdown-tokens", async () => {
+    const mockFetch: typeof fetch = async () =>
+      new Response("# Hello\n\nThis is markdown.", {
+        status: 200,
+        headers: {
+          "content-type": "text/markdown; charset=utf-8",
+        },
+      });
+
+    const result = await fetchMarkdownPage("https://example.com", {
+      fetchImpl: mockFetch,
+    });
+
+    expect(result.source).toBe("cloudflare-markdown");
+    expect(result.markdownTokens).toBeDefined();
+    expect(result.markdownTokens).toBeGreaterThan(0);
+  });
+
   it("falls back to HTML conversion when markdown is not returned", async () => {
     const mockFetch: typeof fetch = async () =>
       new Response(

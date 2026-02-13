@@ -61,8 +61,7 @@ async function run() {
       const htmlChars = html.length;
       const markdownChars = markdownResponse.markdown.length;
       const htmlTokens = estimateTokenCount(html);
-      const markdownTokens =
-        markdownResponse.markdownTokens ?? estimateTokenCount(markdownResponse.markdown);
+      const markdownTokens = estimateTokenCount(markdownResponse.markdown);
 
       rows.push({
         page,
@@ -119,7 +118,7 @@ async function run() {
   }
 
   console.log(
-    "\n*Tokens estimated with mdrip `estimateTokenCount` (chars/4). Markdown tokens use `x-markdown-tokens` when provided by Cloudflare.*",
+    "\n*Tokens estimated with mdrip tokenizer-based `estimateTokenCount` (default: `o200k_base`).*",
   );
 }
 

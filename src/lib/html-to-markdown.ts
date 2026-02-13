@@ -6,6 +6,10 @@ import type {
   DataNode,
   Document,
 } from "domhandler";
+import {
+  estimateTokenCount as estimateTokenCountWithTokenizer,
+  type TokenEstimateOptions,
+} from "./token-count.js";
 
 const SKIP_TAGS = new Set([
   "script",
@@ -445,13 +449,11 @@ function getDocumentTitle(document: Document): string | null {
   return title || null;
 }
 
-export function estimateTokenCount(markdown: string): number {
-  const compact = markdown.trim();
-  if (!compact) {
-    return 0;
-  }
-
-  return Math.ceil(compact.length / 4);
+export function estimateTokenCount(
+  markdown: string,
+  options: TokenEstimateOptions = {},
+): number {
+  return estimateTokenCountWithTokenizer(markdown, options);
 }
 
 export function convertHtmlToMarkdown(html: string, baseUrl?: string): string {
